@@ -11,10 +11,12 @@ function escapeToken(input) {
     let escapedABitMore = escapedSome.replace('-->', '-\\x2d>');
     // '\x3c' = '<'
     let escapedStillMore = escapedABitMore.replace('<script', '\\x3cscript');
-    // must not escape the '/', as that could be the end of a regex
-    // This ensures pedantic compliance with not just HTML5, but HTML4 and
+    // We must not escape the '/', as that could be the end of a regex.
+    // By escaping any instance of </, not just </script,
+    // we ensure pedantic compliance with not just HTML5, but HTML4 and
     // earlier, in which </ unconditionally ended a <script></script> block
     let escapedEvenMore = escapedStillMore.replace('</', '\\x3c/');
+    // Escape ]]> (which would end an XML CDATA section).
     return escapedEvenMore.replace(']]>', ']\\x5d>');
 }
 // Escape the sequences ]]> and -->, which are special
@@ -31,6 +33,7 @@ function handleLeadingGreaterThan(token, input) {
     return token.value;
 }
 
+// Process a single token as returned by Acorn
 function processToken(token, input) {
     if (token.value === undefined) {
         return (token.type === tokTypes.eof) ? null : token.type.label;
